@@ -1,0 +1,5 @@
+# Compiled modules#
+###################
+*.pyc
+*.idea
+*astpp.py
