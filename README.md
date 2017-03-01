@@ -1,3 +1,6 @@
 # Range-analysis-experiments
 
-Prototype of a value range analysis with python language as target.
+Prototype of a value range analysis of python's source code.
+
+##Usage
+**python test_script.py $EXAMPLE**
