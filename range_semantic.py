@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # coding: utf8
 
-from printTrace import *
-from rangeOperator import *
-from dataStructure import *
-from lexicalScopeSymbolTable import *
+from print_trace import *
+from range_operator import *
+from data_structure import *
+from lexical_scope_symbol_table import *
 
 
 class ExtractRangeSemantic(PrintTrace):

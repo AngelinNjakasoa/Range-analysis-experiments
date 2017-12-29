@@ -1,11 +1,15 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
+# coding: utf8
 
-import ast
-import astunparse
-import visitorIteration
+"""
+ Test the Range Analysis on a python source code
+"""
+
 import sys
+import ast
+import visitor_iteration
 
-src = open(sys.argv[1]).read()
-node = ast.parse(src)
-visitor = visitorIteration.VisitorRangeAbstract()
-visitor.visit(node)
+SOURCE_FILE = open(sys.argv[1]).read()
+AST_NODE = ast.parse(SOURCE_FILE)
+VISITOR = visitor_iteration.VisitorRangeAbstract()
+VISITOR.visit(AST_NODE)

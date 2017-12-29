@@ -2,7 +2,24 @@
 # coding: utf8
 
 
-class PrintTrace:
+"""
+ print_trace contains all class related to tracing
+"""
+class PrintTrace(object):
+
+    """
+    Formats and print:
+     - register variable id
+     - assignement
+     - content of while node
+     - statement
+     - content of else node
+     - point:
+         - id of the variable
+         - variable's value
+         - size of the Bitvector
+         - range<lower_bound, 0, upper_bound>
+    """
 
     def __init__(self):
         pass
@@ -35,9 +52,6 @@ class PrintTrace:
 
     @staticmethod
     def print_point(variable_id, value, lower_bound, median, upper_bound):
-        print "  Bv(size=64, id=%s, value=%s), VariableRangeValue(id=%s, range=<%s, %s, %s>)" % (str(variable_id),
-                                                                                                 str(value),
-                                                                                                 variable_id,
-                                                                                                 str(lower_bound),
-                                                                                                 str(median),
-                                                                                                 str(upper_bound))
+        print "  Bv(size=64, id=%s, value=%s), VariableRangeValue(id=%s, range=<%s, %s, %s>)"\
+            % (str(variable_id), str(value), variable_id,
+               str(lower_bound), str(median), str(upper_bound))

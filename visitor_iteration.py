@@ -1,7 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 # coding: utf8
 
-from rangeSemantic import *
+from range_semantic import ast
+from range_semantic import ExtractRangeSemantic
 
 
 class VisitorRangeAbstract(ast.NodeVisitor):

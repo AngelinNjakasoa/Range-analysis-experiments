@@ -46,8 +46,7 @@ class LexicalScopeSymbolTable:
     level_scope = list(list())
     current_level = 0
 
-    def __init__(self, default_symbol_table=list(list())):
-        level_scope = default_symbol_table
+    def __init__(self):
         self.initialize_scope()
 
     def debug_level(self):
@@ -62,8 +61,9 @@ class LexicalScopeSymbolTable:
             symbol_table = scope_offset.get_symbol_table()
             i = scope_offset.get_offset_scope()
             for k, v in symbol_table.iteritems():
-                print "Scope(%s:%s) -> id: %s, value=%s, addr=%s, addr_table=%s" % (str(level), str(i), str(k)
-                                                                                    , str(v.n), str(v), str(hex(id(symbol_table))))
+                print "Scope(%s:%s) -> id: %s, value=%s, addr=%s, addr_table=%s"\
+                    % (str(level), str(i), str(k)
+                       , str(v.n), str(v), str(hex(id(symbol_table))))
 
     def add_new_scope(self):
         # upper_offset = self.get_offset_last_dominant()
@@ -102,7 +102,8 @@ class LexicalScopeSymbolTable:
     def bind_symbol(self, symbol, value, index_level, offset):
         symbol_table = self.get_symbol_table(index_level, offset)
         symbol_table[symbol] = value
-        print "Bind_scope: %s:%s - addr_table=%s" % (str(index_level), offset, str(hex(id(symbol_table))))
+        print "Bind_scope: %s:%s - addr_table=%s" \
+            % (str(index_level), offset, str(hex(id(symbol_table))))
 
     def lookup_symbol(self, symbol):
         index_level = self.get_current_level() - 1
@@ -123,11 +124,11 @@ class LexicalScopeSymbolTable:
         if self.level_scope[dominant_level][upper_offset]:
             symbol_table = self.get_symbol_table(dominant_level, upper_offset)
             if symbol in symbol_table.keys():
-                print "Lookup_dominant_scope: found %s=%s" % (symbol, symbol_table[symbol])
+                print "Lookup_dominant_scope: found %s=%s" \
+                    % (symbol, symbol_table[symbol])
                 return symbol_table[symbol]
-        print "Lookup_dominant_scope: Not found - %s; upper_level=%s, upper_offset=%s" % (str(symbol)
-                                                                                          , dominant_level
-                                                                                          , upper_offset)
+        print "Lookup_dominant_scope: Not found - %s; upper_level=%s, upper_offset=%s" \
+            % (str(symbol), dominant_level, upper_offset)
         return None
 
     def finalize_scope(self):
@@ -172,6 +173,7 @@ class LexicalScopeSymbolTable:
         return symbol_table
 
     def print_scope_initialization(self, offset):
-        print "===== -> Initialize Scope %s:%s - %s =====" % (str(self.current_level)
-                                                              , self.get_scope(offset).get_offset_scope()
-                                                              , self.get_scope(offset).get_upper_offset())
+        print "===== -> Initialize Scope %s:%s - %s ====="\
+            % (str(self.current_level)
+               , self.get_scope(offset).get_offset_scope()
+               , self.get_scope(offset).get_upper_offset())
