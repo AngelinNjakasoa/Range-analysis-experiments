@@ -2,6 +2,8 @@
 
 Prototype of a value range analysis of python's source code.
 
+Work in progress
+
 ## Requirements
 
  - python modules: astunparse, ast
