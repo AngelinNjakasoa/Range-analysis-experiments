@@ -2,17 +2,17 @@
 # coding: utf8
 
 
-class EntrySymbolTable:
+class EntrySymbolTable(object):
 
     level_scope = 0
     offset_scope = 0
-    upperScopeOffset = 0
+    upper_scope_offset = 0
     symbols = dict()
 
-    def __init__(self, level, offset, upper_scope_offset, default_symbols):
+    def __init__(self, level, offset, upper_scope, default_symbols):
         self.level_scope = level
         self.offset_scope = offset
-        self.upperScopeOffset = upper_scope_offset
+        self.upper_scope_offset = upper_scope
         self.symbols = default_symbols
         print "__init_EntrySymbolTable__: address_table=%s" % (str(hex(id(self.symbols))))
 
@@ -26,13 +26,13 @@ class EntrySymbolTable:
         return self.offset_scope
 
     def get_upper_offset(self):
-        return self.upperScopeOffset
+        return self.upper_scope_offset
 
     def get_symbol_table(self):
         return self.symbols
 
     def set_upper_scope_offset(self, offset):
-        self.upperScopeOffset = offset
+        self.upper_scope_offset = offset
 
     def set_offset_scope(self, offset):
         self.offset_scope = offset
@@ -41,7 +41,7 @@ class EntrySymbolTable:
         self.symbols = symbol_table
 
 
-class LexicalScopeSymbolTable:
+class LexicalScopeSymbolTable(object):
 
     level_scope = list(list())
     current_level = 0

@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # coding: utf8
 
-from print_trace import *
-from range_operator import *
-from data_structure import *
-from lexical_scope_symbol_table import *
+import ast
+from print_trace import PrintTrace
+from range_operator import operators
+from range_operator import comparison_sign
+from range_operator import opposite_comparison
+from data_structure import VariableRangeValue
+from lexical_scope_symbol_table import LexicalScopeSymbolTable
 
 
 class ExtractRangeSemantic(PrintTrace):
@@ -28,15 +31,19 @@ class ExtractRangeSemantic(PrintTrace):
     def next_step_variables(self):
         self.vector_point.append(dict())
         if len(self.vector_point) > 1:
-            for k, v in self.vector_point[-2].iteritems():
-                if v != 0:
+            for k, value in self.vector_point[-2].iteritems():
+                if value != 0:
                     self.vector_point[-1][k] = VariableRangeValue(64, k, [None, None, None])
                     self.propagate_range(len(self.vector_point) - 1, k)
                     self.vector_point[-1][k].value = None
                     self.vector_point[-1][k].id = k
         else:
             for element in self.all_variable_id:
-                self.vector_point[-1][element] = VariableRangeValue(64, element, [-float("inf"), 0, float("inf")])
+                self.vector_point[-1][element] = VariableRangeValue(64,
+                                                                    element,
+                                                                    [-float("inf"),
+                                                                     0,
+                                                                     float("inf")])
                 self.vector_point[-1][element].id = element
         self.id_node = len(self.vector_point)
 
@@ -53,8 +60,12 @@ class ExtractRangeSemantic(PrintTrace):
             right_op = node_right
         return [left_op, right_op]
 
-    def get_unary_operator_operands(self, operand):
-        return []
+    def get_unary_operator_operand(self, operand):
+        if isinstance(operand, ast.Name):
+            return self.scope_symbol_table.lookup_symbol(operand.id)
+        else:
+            print "Error: bad operand"
+            raise
 
     def eval_(self, node):
         if isinstance(node, ast.Num):
@@ -64,16 +75,16 @@ class ExtractRangeSemantic(PrintTrace):
             print "Eval: operands - " + str(operands)
             return int(operators[type(node.op)](self.eval_(operands[0]), self.eval_(operands[1])))
         elif isinstance(node, ast.UnaryOp):
-            operand = self.get_unary_operator_operands(node.operand)
-            return int(operators[type(ast.UnaryOp)](self.eval_(operand)))
-        else:
-            return 0
+            operand = self.get_unary_operator_operand(node.operand)
+            return int(operators[type(node.op)](self.eval_(operand)))
+        print "Error: incorrect type in eval_"
+        raise
 
-    def propagate_range(self, point, variable_id):
-        previous_point = point - 1
-        self.vector_point[point][variable_id].range[0] = self.vector_point[previous_point][variable_id].range[0]
-        self.vector_point[point][variable_id].range[1] = self.vector_point[previous_point][variable_id].range[1]
-        self.vector_point[point][variable_id].range[2] = self.vector_point[previous_point][variable_id].range[2]
+    def propagate_range(self, point, var_id):
+        prev_point = point - 1
+        self.vector_point[point][var_id].range[0] = self.vector_point[prev_point][var_id].range[0]
+        self.vector_point[point][var_id].range[1] = self.vector_point[prev_point][var_id].range[1]
+        self.vector_point[point][var_id].range[2] = self.vector_point[prev_point][var_id].range[2]
 
     def reset_range(self, point, variable_id):
         for index in range(0, len(self.vector_point[point][variable_id].range)):
@@ -86,8 +97,10 @@ class ExtractRangeSemantic(PrintTrace):
         if value == 0:
             self.vector_point[point][variable_id].range[index] = 0
             return 0
-        index = (0, 2)[value > 0]
-        self.vector_point[point][variable_id].range[index] = (-float("inf"), float("inf"))[value > 0]
+        index = (2 if value > 0 else 0)
+
+        self.vector_point[point][variable_id].range[index] = (float('inf') \
+                                                              if value > 0 else -float('inf'))
 
     def assignment_update(self, new_value):
         for element in new_value.targets:
@@ -107,8 +120,8 @@ class ExtractRangeSemantic(PrintTrace):
     def get_statement(node, flag_opposite):
         collection = [None, None, None]
         comparator = node.test.comparators
-        collection[0] = (comparison_sign[type(node.test.ops[0])]
-                         , comparison_sign[opposite_comparison[type(node.test.ops[0])]])[flag_opposite == 1]
+        collection[0] = (comparison_sign[opposite_comparison[type(node.test.ops[0])]] \
+                         if flag_opposite == 1 else comparison_sign[type(node.test.ops[0])])
         if isinstance(node.test.left, ast.Num):
             collection[1] = node.test.left.n
         elif isinstance(node.test.left, ast.Name):
@@ -153,7 +166,7 @@ class ExtractRangeSemantic(PrintTrace):
         self.print_debug_level()
         for element in self.vector_point:
             self.print_state(point + 1)
-            for k, v in element.iteritems():
+            for k in element:
                 point_index = point
                 lower_bound = self.vector_point[point_index][k].range[0]
                 median = self.vector_point[point_index][k].range[1]

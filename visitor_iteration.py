@@ -1,6 +1,10 @@
 #!/usr/bin/python2.7
 # coding: utf8
 
+"""
+ Contains the VisitorRangeAbstract class.
+"""
+
 from range_semantic import ast
 from range_semantic import ExtractRangeSemantic
 
@@ -28,10 +32,10 @@ class VisitorRangeAbstract(ast.NodeVisitor):
         """
         dict_id = dict()
         print "#" * 80
-        for n in ast.walk(node):
-            if isinstance(n, ast.Name) and n.id not in dict_id:
-                self.semantic.register_variable_id(n.id)
-                dict_id[n.id] = 1
+        for element in ast.walk(node):
+            if isinstance(element, ast.Name) and element.id not in dict_id:
+                self.semantic.register_variable_id(element.id)
+                dict_id[element.id] = 1
         self.semantic.next_step_variables()
         self.generic_visit(node)
         print "#" * 80
@@ -39,6 +43,9 @@ class VisitorRangeAbstract(ast.NodeVisitor):
         print "#" * 80
 
     def visit_BinOp(self, node):
+        """
+         Extracts a binary operation semantic and update the range
+        """
         VisitorRangeAbstract.semantic.extract_binary_operation(node)
         self.generic_visit(node)
 
@@ -66,14 +73,27 @@ class VisitorRangeAbstract(ast.NodeVisitor):
         VisitorRangeAbstract.semantic.finalize_scope()
 
     def visit_Assign(self, node):
+        """
+         Visits an assign node
+         Update the range when an new value is assigned to a variable
+        """
         VisitorRangeAbstract.semantic.assignment_update(node)
         self.generic_visit(node)
 
     def visit_Compare(self, node):
+        """
+         Visits a comparison node
+         Update the range according to the comparison
+        """
         print "Compare node" + "State: " + str(VisitorRangeAbstract.id_node)
         self.generic_visit(node)
 
     def visit_While(self, node):
+        """
+         Visits a While node
+         Extract the semantic of the while node and create a scope for the
+         while node's body, then visit the while node's body
+        """
         self.semantic.extract_while_update(node)
         VisitorRangeAbstract.semantic.initialize_scope()
         for element in node.body:
