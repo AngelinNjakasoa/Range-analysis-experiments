@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # coding: utf8
 
+"""
+ Contains classes related to Range semantic
+"""
+
 import ast
 from print_trace import PrintTrace
 from range_operator import operators
@@ -11,7 +15,10 @@ from lexical_scope_symbol_table import LexicalScopeSymbolTable
 
 
 class ExtractRangeSemantic(PrintTrace):
-
+    """
+     Keeps track of operations made on symbols per scope and updates the range according
+     to the semantic of the operations.
+    """
     all_variable_id = list()
     vector_point = list()
     scope_symbol_table = LexicalScopeSymbolTable()
@@ -22,13 +29,22 @@ class ExtractRangeSemantic(PrintTrace):
         self.id_node = 1
 
     def get_id_node(self):
+        """
+         Returns the value of id_node
+        """
         return self.id_node
 
     def register_variable_id(self, variable_id):
+        """
+         Register a variable's identifier, a symbol
+        """
         self.all_variable_id.append(str(variable_id))
         self.print_register_variable_id(variable_id)
 
     def next_step_variables(self):
+        """
+         Initializes a variable range value and propagate the range
+        """
         self.vector_point.append(dict())
         if len(self.vector_point) > 1:
             for k, value in self.vector_point[-2].iteritems():
@@ -48,6 +64,10 @@ class ExtractRangeSemantic(PrintTrace):
         self.id_node = len(self.vector_point)
 
     def get_binary_operator_operands(self, node_left, node_right):
+        """
+         Extracts values from the operands of a binary operator
+         Returns a tuple of ast.Num nodes
+        """
         left_op = node_left
         right_op = node_right
         if isinstance(node_left, ast.Name):
@@ -61,13 +81,19 @@ class ExtractRangeSemantic(PrintTrace):
         return [left_op, right_op]
 
     def get_unary_operator_operand(self, operand):
+        """
+         Extracts the value from the operand of an unary operator
+         Returns a ast.Num nodes
+        """
         if isinstance(operand, ast.Name):
             return self.scope_symbol_table.lookup_symbol(operand.id)
         else:
-            print "Error: bad operand"
-            raise
+            raise Exception("Error: bad operand")
 
     def eval_(self, node):
+        """
+         Performs unary, binary operations and return the result as a real value
+        """
         if isinstance(node, ast.Num):
             return node.n
         elif isinstance(node, ast.BinOp):
@@ -77,21 +103,29 @@ class ExtractRangeSemantic(PrintTrace):
         elif isinstance(node, ast.UnaryOp):
             operand = self.get_unary_operator_operand(node.operand)
             return int(operators[type(node.op)](self.eval_(operand)))
-        print "Error: incorrect type in eval_"
-        raise
+        raise Exception("Error: incorrect type in eval_")
 
     def propagate_range(self, point, var_id):
+        """
+         Propagates the range value from the previous point to the next one
+        """
         prev_point = point - 1
         self.vector_point[point][var_id].range[0] = self.vector_point[prev_point][var_id].range[0]
         self.vector_point[point][var_id].range[1] = self.vector_point[prev_point][var_id].range[1]
         self.vector_point[point][var_id].range[2] = self.vector_point[prev_point][var_id].range[2]
 
     def reset_range(self, point, variable_id):
+        """
+         Sets the range to <None, None, None>
+        """
         for index in range(0, len(self.vector_point[point][variable_id].range)):
             self.vector_point[point][variable_id].range[index] = None
             index += 1
 
     def update_range_semantic(self, point, variable_id, value):
+        """
+         Updates the range of a variable for a specific point
+        """
         index = 1
         self.reset_range(point, variable_id)
         if value == 0:
@@ -103,6 +137,9 @@ class ExtractRangeSemantic(PrintTrace):
                                                               if value > 0 else -float('inf'))
 
     def assignment_update(self, new_value):
+        """
+         Updates the value of a symbol, its range and print the assignment
+        """
         for element in new_value.targets:
             evaluated_value = self.eval_(new_value.value)
             node_value = ast.Num(evaluated_value)
@@ -118,6 +155,9 @@ class ExtractRangeSemantic(PrintTrace):
 
     @staticmethod
     def get_statement(node, flag_opposite):
+        """
+         Extracts a statement from a node
+        """
         collection = [None, None, None]
         comparator = node.test.comparators
         collection[0] = (comparison_sign[opposite_comparison[type(node.test.ops[0])]] \
@@ -133,35 +173,56 @@ class ExtractRangeSemantic(PrintTrace):
         return collection
 
     def extract_while_update(self, node):
+        """
+         Extracts the while statement's content and update the range
+        """
         operation = self.get_statement(node, 0)
         self.print_statement(self.id_node, "While", operation[1], operation[0], operation[2])
         self.next_step_variables()
 
     def extract_if_statement_update(self, node):
+        """
+         Extracts the if statement's content and update the range
+        """
         operation = self.get_statement(node, 0)
         self.print_statement(self.id_node, "If", operation[1], operation[0], operation[2])
         self.next_step_variables()
 
     def extract_else_statement_update(self, node):
+        """
+         Extracts the else statement's content and update the range
+        """
         operation = self.get_statement(node, 1)
         self.print_statement(self.id_node, "Else", operation[1], operation[0], operation[2])
         self.next_step_variables()
 
-    def extract_binary_operation(self, node):
-        pass
+    # def extract_binary_operation(self, node):
+    #     pass
 
     def initialize_scope(self):
+        """
+         Initializes a scope
+        """
         self.scope_symbol_table.initialize_scope()
 
     def finalize_scope(self):
+        """
+         Closes a scope
+        """
         self.scope_symbol_table.finalize_scope()
 
     def print_debug_level(self):
+        """
+         Prints debug information
+        """
         for i in range(0, self.scope_symbol_table.get_size_level()):
             self.scope_symbol_table.dump_level(i)
         print "#" * 30 + "End of DEBUG LEVEL" + "#" * 30
 
     def print_all_iteration(self):
+        """
+         Prints all iterations performed on the vector_point
+        """
         point = 0
         self.print_debug_level()
         for element in self.vector_point:

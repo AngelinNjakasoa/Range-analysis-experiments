@@ -46,7 +46,7 @@ class VisitorRangeAbstract(ast.NodeVisitor):
         """
          Extracts a binary operation semantic and update the range
         """
-        VisitorRangeAbstract.semantic.extract_binary_operation(node)
+        #VisitorRangeAbstract.semantic.extract_binary_operation(node)
         self.generic_visit(node)
 
     def visit_If(self, node):
