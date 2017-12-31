@@ -6,7 +6,9 @@ Work in progress
 
 ## Requirements
 
- - python modules: astunparse, ast
+ - python modules:
+    - ast
+    - astunparse
 
 ## Usage
 ```
